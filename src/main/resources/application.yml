@@ -79,3 +79,5 @@ library:
       book-events: book-events-topic
       author-events: author-events-topic
       audit-events: audit-events-topic
+  data:
+    initialize-sample-data: true # Set to false to skip sample data initialization

@@ -6,6 +6,7 @@ import com.library.repository.AuthorRepository;
 import com.library.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,9 @@ public class DataInitializer implements CommandLineRunner {
     private final AuthorRepository authorRepository;
     private final BookRepository bookRepository;
     private final Random random = new Random();
+    
+    @Value("${library.data.initialize-sample-data:true}")
+    private boolean initializeSampleData;
     
     // Dynamic data arrays
     private static final List<String> FIRST_NAMES = Arrays.asList(
@@ -75,6 +79,11 @@ public class DataInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
+        if (!initializeSampleData) {
+            log.info("Sample data initialization is disabled. Use REST APIs to add books and authors dynamically.");
+            return;
+        }
+        
         log.info("Initializing dynamic sample data...");
         
         // Clear existing data
@@ -100,6 +109,7 @@ public class DataInitializer implements CommandLineRunner {
         
         log.info("Dynamic sample data initialized successfully!");
         log.info("Created {} authors and {} books", authorRepository.count(), bookRepository.count());
+        log.info("You can now use REST APIs to add more books and authors dynamically.");
     }
     
     private Author createRandomAuthor() {
