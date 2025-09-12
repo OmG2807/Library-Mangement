@@ -1,0 +1,81 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: library-management-system
+  
+  datasource:
+    url: jdbc:h2:mem:library_management
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: library-management-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+
+
+# Logging configuration
+logging:
+  level:
+    com.library: DEBUG
+    org.springframework.data.jpa: DEBUG
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Custom application properties
+library:
+  pagination:
+    default-page-size: 10
+    max-page-size: 100
+  cache:
+    ttl: 3600 # 1 hour in seconds
+  rate-limit:
+    requests-per-minute: 100
+  kafka:
+    topics:
+      book-events: book-events-topic
+      author-events: author-events-topic
+      audit-events: audit-events-topic

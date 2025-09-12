@@ -1,0 +1,171 @@
+package com.library.controller;
+
+import com.library.model.Author;
+import com.library.model.dto.AuthorRequest;
+import com.library.model.dto.PageResponse;
+import com.library.service.AuthorService;
+import javax.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * REST Controller for Author operations
+ */
+@RestController
+@RequestMapping("/authors")
+@RequiredArgsConstructor
+@Slf4j
+public class AuthorController {
+    
+    private final AuthorService authorService;
+    
+    /**
+     * Create a new author
+     */
+    @PostMapping
+    public ResponseEntity<Author> createAuthor(@Valid @RequestBody AuthorRequest authorRequest) {
+        log.info("Creating new author with name: {}", authorRequest.getName());
+        Author author = authorService.createAuthor(authorRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(author);
+    }
+    
+    /**
+     * Get author by ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Author> getAuthorById(@PathVariable Long id) {
+        log.info("Fetching author by ID: {}", id);
+        Author author = authorService.getAuthorById(id);
+        return ResponseEntity.ok(author);
+    }
+    
+    /**
+     * Get author by name
+     */
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Author> getAuthorByName(@PathVariable String name) {
+        log.info("Fetching author by name: {}", name);
+        Author author = authorService.getAuthorByName(name);
+        return ResponseEntity.ok(author);
+    }
+    
+    /**
+     * Update author by ID
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Author> updateAuthor(@PathVariable Long id, 
+                                              @Valid @RequestBody AuthorRequest authorRequest) {
+        log.info("Updating author with ID: {}", id);
+        Author author = authorService.updateAuthor(id, authorRequest);
+        return ResponseEntity.ok(author);
+    }
+    
+    /**
+     * Delete author by ID
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAuthor(@PathVariable Long id) {
+        log.info("Deleting author with ID: {}", id);
+        authorService.deleteAuthor(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * Get all authors with pagination and sorting
+     */
+    @GetMapping
+    public ResponseEntity<PageResponse<Author>> getAllAuthors(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        
+        log.info("Fetching all authors - page: {}, size: {}, sortBy: {}, sortDirection: {}", 
+                page, size, sortBy, sortDirection);
+        
+        PageResponse<Author> authorPage = authorService.getAllAuthors(page, size, sortBy, sortDirection);
+        return ResponseEntity.ok(authorPage);
+    }
+    
+    /**
+     * Search authors by name
+     */
+    @GetMapping("/search")
+    public ResponseEntity<PageResponse<Author>> searchAuthors(
+            @RequestParam String searchText,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        log.info("Searching authors with text: {}", searchText);
+        PageResponse<Author> authorPage = authorService.searchAuthors(searchText, page, size);
+        return ResponseEntity.ok(authorPage);
+    }
+    
+    /**
+     * Get authors by birth year
+     */
+    @GetMapping("/birth-year/{birthYear}")
+    public ResponseEntity<PageResponse<Author>> getAuthorsByBirthYear(
+            @PathVariable Integer birthYear,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        log.info("Fetching authors by birth year: {}", birthYear);
+        PageResponse<Author> authorPage = authorService.getAuthorsByBirthYear(birthYear, page, size);
+        return ResponseEntity.ok(authorPage);
+    }
+    
+    /**
+     * Get authors by birth year range
+     */
+    @GetMapping("/birth-year-range")
+    public ResponseEntity<PageResponse<Author>> getAuthorsByBirthYearRange(
+            @RequestParam Integer startYear,
+            @RequestParam Integer endYear,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        log.info("Fetching authors by birth year range: {} - {}", startYear, endYear);
+        PageResponse<Author> authorPage = authorService.getAuthorsByBirthYearRange(startYear, endYear, page, size);
+        return ResponseEntity.ok(authorPage);
+    }
+    
+    /**
+     * Get authors with biography
+     */
+    @GetMapping("/with-biography")
+    public ResponseEntity<PageResponse<Author>> getAuthorsWithBiography(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        log.info("Fetching authors with biography");
+        PageResponse<Author> authorPage = authorService.getAuthorsWithBiography(page, size);
+        return ResponseEntity.ok(authorPage);
+    }
+    
+    /**
+     * Get authors without biography
+     */
+    @GetMapping("/without-biography")
+    public ResponseEntity<PageResponse<Author>> getAuthorsWithoutBiography(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        log.info("Fetching authors without biography");
+        PageResponse<Author> authorPage = authorService.getAuthorsWithoutBiography(page, size);
+        return ResponseEntity.ok(authorPage);
+    }
+    
+    /**
+     * Check if author exists by name
+     */
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> authorExistsByName(@RequestParam String name) {
+        log.info("Checking if author exists by name: {}", name);
+        boolean exists = authorService.authorExistsByName(name);
+        return ResponseEntity.ok(exists);
+    }
+}
