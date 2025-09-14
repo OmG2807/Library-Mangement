@@ -4,7 +4,6 @@ import com.library.model.Book;
 import com.library.model.dto.BookRequest;
 import com.library.model.dto.BookResponse;
 import com.library.model.dto.PageResponse;
-import com.library.repository.CustomBookRepository;
 
 import java.util.List;
 
@@ -56,30 +55,9 @@ public interface BookService {
     PageResponse<BookResponse> getBooksByAvailabilityStatus(Book.AvailabilityStatus status, int page, int size);
     
     /**
-     * Get books by author
+     * Get books by author ID
      */
     PageResponse<BookResponse> getBooksByAuthor(Long authorId, int page, int size);
-    
-    
-    /**
-     * Get popular books
-     */
-    List<BookResponse> getPopularBooks(int limit);
-    
-    /**
-     * Get recently added books
-     */
-    List<BookResponse> getRecentlyAddedBooks(int limit);
-    
-    /**
-     * Get similar books
-     */
-    List<BookResponse> getSimilarBooks(Long bookId, int limit);
-    
-    /**
-     * Get book statistics
-     */
-    CustomBookRepository.BookStatistics getBookStatistics();
     
     /**
      * Update book availability status

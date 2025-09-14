@@ -37,7 +37,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
      */
     Page<Book> findByAuthorId(Long authorId, Pageable pageable);
     
-    
     /**
      * Find books by published year with pagination
      */
@@ -66,33 +65,27 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b JOIN b.author a WHERE " +
            "LOWER(b.title) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
            "LOWER(a.name) LIKE LOWER(CONCAT('%', :searchText, '%'))")
-    Page<Book> findByTextSearch(@Param("searchText") String searchText, Pageable pageable);
+    Page<Book> findBySearchText(@Param("searchText") String searchText, Pageable pageable);
     
     /**
-     * Complex search with multiple filters
+     * Advanced search with multiple criteria
      */
     @Query("SELECT b FROM Book b JOIN b.author a WHERE " +
-           "(LOWER(b.title) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+           "(:searchText IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
            "LOWER(a.name) LIKE LOWER(CONCAT('%', :searchText, '%'))) AND " +
            "(:availabilityStatus IS NULL OR b.availabilityStatus = :availabilityStatus) AND " +
            "(:publishedYear IS NULL OR b.publishedYear = :publishedYear) AND " +
            "(:authorId IS NULL OR a.id = :authorId)")
-    Page<Book> findBySearchCriteria(@Param("searchText") String searchText, 
-                                   @Param("availabilityStatus") Book.AvailabilityStatus availabilityStatus, 
-                                   @Param("publishedYear") Integer publishedYear, 
-                                   @Param("authorId") Long authorId, Pageable pageable);
+    Page<Book> findBySearchCriteria(@Param("searchText") String searchText,
+                                   @Param("availabilityStatus") Book.AvailabilityStatus availabilityStatus,
+                                   @Param("publishedYear") Integer publishedYear,
+                                   @Param("authorId") Long authorId,
+                                   Pageable pageable);
     
     /**
      * Find books by multiple availability statuses
      */
-    @Query("SELECT b FROM Book b WHERE b.availabilityStatus IN :statuses")
     Page<Book> findByAvailabilityStatusIn(@Param("statuses") List<Book.AvailabilityStatus> statuses, Pageable pageable);
-    
-    /**
-     * Find recently added books
-     */
-    @Query("SELECT b FROM Book b WHERE b.createdAt >= :since")
-    Page<Book> findRecentlyAdded(@Param("since") java.time.LocalDateTime since, Pageable pageable);
     
     /**
      * Count books by availability status
@@ -103,11 +96,4 @@ public interface BookRepository extends JpaRepository<Book, Long> {
      * Count books by author
      */
     long countByAuthorId(Long authorId);
-    
-    
-    /**
-     * Find all books with pagination (for general listing)
-     */
-    @Override
-    Page<Book> findAll(Pageable pageable);
 }

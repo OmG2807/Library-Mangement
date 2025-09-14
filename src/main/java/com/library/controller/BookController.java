@@ -5,15 +5,12 @@ import com.library.model.dto.BookRequest;
 import com.library.model.dto.BookResponse;
 import com.library.model.dto.PageResponse;
 import com.library.service.BookService;
-import com.library.repository.CustomBookRepository;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * REST Controller for Book operations
@@ -112,9 +109,7 @@ public class BookController {
                 searchText, availabilityStatus, publishedYear, authorId);
         
         PageResponse<BookResponse> bookPage = bookService.searchBooks(
-                searchText, availabilityStatus, publishedYear, authorId, 
-                page, size, sortBy, sortDirection);
-        
+                searchText, availabilityStatus, publishedYear, authorId, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(bookPage);
     }
     
@@ -133,7 +128,7 @@ public class BookController {
     }
     
     /**
-     * Get books by author
+     * Get books by author ID
      */
     @GetMapping("/author/{authorId}")
     public ResponseEntity<PageResponse<BookResponse>> getBooksByAuthor(
@@ -146,54 +141,6 @@ public class BookController {
         return ResponseEntity.ok(bookPage);
     }
     
-    
-    /**
-     * Get popular books
-     */
-    @GetMapping("/popular")
-    public ResponseEntity<List<BookResponse>> getPopularBooks(
-            @RequestParam(defaultValue = "10") int limit) {
-        
-        log.info("Fetching popular books with limit: {}", limit);
-        List<BookResponse> popularBooks = bookService.getPopularBooks(limit);
-        return ResponseEntity.ok(popularBooks);
-    }
-    
-    /**
-     * Get recently added books
-     */
-    @GetMapping("/recent")
-    public ResponseEntity<List<BookResponse>> getRecentlyAddedBooks(
-            @RequestParam(defaultValue = "10") int limit) {
-        
-        log.info("Fetching recently added books with limit: {}", limit);
-        List<BookResponse> recentBooks = bookService.getRecentlyAddedBooks(limit);
-        return ResponseEntity.ok(recentBooks);
-    }
-    
-    /**
-     * Get similar books
-     */
-    @GetMapping("/{id}/similar")
-    public ResponseEntity<List<BookResponse>> getSimilarBooks(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "5") int limit) {
-        
-        log.info("Fetching similar books for book ID: {} with limit: {}", id, limit);
-        List<BookResponse> similarBooks = bookService.getSimilarBooks(id, limit);
-        return ResponseEntity.ok(similarBooks);
-    }
-    
-    /**
-     * Get book statistics
-     */
-    @GetMapping("/statistics")
-    public ResponseEntity<CustomBookRepository.BookStatistics> getBookStatistics() {
-        log.info("Fetching book statistics");
-        CustomBookRepository.BookStatistics statistics = bookService.getBookStatistics();
-        return ResponseEntity.ok(statistics);
-    }
-    
     /**
      * Update book availability status
      */
@@ -202,17 +149,17 @@ public class BookController {
             @PathVariable Long id,
             @RequestParam Book.AvailabilityStatus status) {
         
-        log.info("Updating book availability for ID: {} to status: {}", id, status);
+        log.info("Updating book availability - bookId: {}, status: {}", id, status);
         BookResponse bookResponse = bookService.updateBookAvailability(id, status);
         return ResponseEntity.ok(bookResponse);
     }
     
     /**
-     * Check if book is available for borrowing
+     * Check if book is available
      */
-    @GetMapping("/{id}/availability")
+    @GetMapping("/{id}/available")
     public ResponseEntity<Boolean> isBookAvailable(@PathVariable Long id) {
-        log.info("Checking book availability for ID: {}", id);
+        log.info("Checking availability for book ID: {}", id);
         boolean isAvailable = bookService.isBookAvailable(id);
         return ResponseEntity.ok(isAvailable);
     }

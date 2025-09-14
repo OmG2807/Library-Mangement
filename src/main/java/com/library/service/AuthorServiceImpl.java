@@ -26,7 +26,6 @@ import java.util.List;
 public class AuthorServiceImpl implements AuthorService {
     
     private final AuthorRepository authorRepository;
-    private final EventService eventService;
     
     @Override
     public Author createAuthor(AuthorRequest authorRequest) {
@@ -40,17 +39,12 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = new Author(
                 authorRequest.getName(),
                 authorRequest.getBiography(),
-                authorRequest.getBirthYear(),
                 authorRequest.getNationality()
         );
         
         Author savedAuthor = authorRepository.save(author);
         log.info("Author created successfully with ID: {}", savedAuthor.getId());
         
-        // Publish author creation event
-        eventService.publishAuthorEvent(savedAuthor, "CREATE");
-        eventService.publishAuditEvent("system", "CREATE_AUTHOR", "AUTHOR", savedAuthor.getId(), 
-                "Author created: " + savedAuthor.getName());
         
         return savedAuthor;
     }
@@ -84,17 +78,12 @@ public class AuthorServiceImpl implements AuthorService {
         
         existingAuthor.setName(authorRequest.getName());
         existingAuthor.setBiography(authorRequest.getBiography());
-        existingAuthor.setBirthYear(authorRequest.getBirthYear());
         existingAuthor.setNationality(authorRequest.getNationality());
         existingAuthor.setUpdatedAt(LocalDateTime.now());
         
         Author updatedAuthor = authorRepository.save(existingAuthor);
         log.info("Author updated successfully with ID: {}", updatedAuthor.getId());
         
-        // Publish author update event
-        eventService.publishAuthorEvent(updatedAuthor, "UPDATE");
-        eventService.publishAuditEvent("system", "UPDATE_AUTHOR", "AUTHOR", updatedAuthor.getId(), 
-                "Author updated: " + updatedAuthor.getName());
         
         return updatedAuthor;
     }
@@ -106,10 +95,6 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Author not found with ID: " + id));
         
-        // Publish author deletion event before deleting
-        eventService.publishAuthorEvent(author, "DELETE");
-        eventService.publishAuditEvent("system", "DELETE_AUTHOR", "AUTHOR", author.getId(), 
-                "Author deleted: " + author.getName());
         
         authorRepository.deleteById(id);
         log.info("Author deleted successfully with ID: {}", id);
@@ -139,55 +124,6 @@ public class AuthorServiceImpl implements AuthorService {
                 authorPage.getSize(), authorPage.getTotalElements());
     }
     
-    @Override
-    public PageResponse<Author> getAuthorsByBirthYear(Integer birthYear, int page, int size) {
-        log.info("Fetching authors by birth year: {} - page: {}, size: {}", birthYear, page, size);
-        
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Author> authorPage = authorRepository.findByBirthYear(birthYear, pageable);
-        
-        return new PageResponse<>(authorPage.getContent(), authorPage.getNumber(), 
-                authorPage.getSize(), authorPage.getTotalElements());
-    }
-    
-    @Override
-    public PageResponse<Author> getAuthorsByBirthYearRange(Integer startYear, Integer endYear, int page, int size) {
-        log.info("Fetching authors by birth year range: {} to {} - page: {}, size: {}", startYear, endYear, page, size);
-        
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Author> authorPage = authorRepository.findByBirthYearBetween(startYear, endYear, pageable);
-        
-        return new PageResponse<>(authorPage.getContent(), authorPage.getNumber(), 
-                authorPage.getSize(), authorPage.getTotalElements());
-    }
-    
-    @Override
-    public PageResponse<Author> getAuthorsWithBiography(int page, int size) {
-        log.info("Fetching authors with biography - page: {}, size: {}", page, size);
-        
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Author> authorPage = authorRepository.findAuthorsWithBiography(pageable);
-        
-        return new PageResponse<>(authorPage.getContent(), authorPage.getNumber(), 
-                authorPage.getSize(), authorPage.getTotalElements());
-    }
-    
-    @Override
-    public PageResponse<Author> getAuthorsWithoutBiography(int page, int size) {
-        log.info("Fetching authors without biography - page: {}, size: {}", page, size);
-        
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Author> authorPage = authorRepository.findAuthorsWithoutBiography(pageable);
-        
-        return new PageResponse<>(authorPage.getContent(), authorPage.getNumber(), 
-                authorPage.getSize(), authorPage.getTotalElements());
-    }
-    
-    @Override
-    public boolean authorExistsByName(String name) {
-        log.info("Checking if author exists by name: {}", name);
-        return authorRepository.existsByName(name);
-    }
     
     private Sort createSort(String sortBy, String sortDirection) {
         if (sortBy == null || sortBy.trim().isEmpty()) {

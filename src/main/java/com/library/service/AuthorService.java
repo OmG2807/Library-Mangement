@@ -44,28 +44,4 @@ public interface AuthorService {
      */
     PageResponse<Author> searchAuthors(String searchText, int page, int size);
     
-    /**
-     * Get authors by birth year
-     */
-    PageResponse<Author> getAuthorsByBirthYear(Integer birthYear, int page, int size);
-    
-    /**
-     * Get authors by birth year range
-     */
-    PageResponse<Author> getAuthorsByBirthYearRange(Integer startYear, Integer endYear, int page, int size);
-    
-    /**
-     * Get authors with biography
-     */
-    PageResponse<Author> getAuthorsWithBiography(int page, int size);
-    
-    /**
-     * Get authors without biography
-     */
-    PageResponse<Author> getAuthorsWithoutBiography(int page, int size);
-    
-    /**
-     * Check if author exists by name
-     */
-    boolean authorExistsByName(String name);
 }

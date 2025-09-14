@@ -7,13 +7,11 @@ USE library_management;
 CREATE TABLE IF NOT EXISTS authors (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    birth_year INT,
     nationality VARCHAR(100),
     biography TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_author_name (name),
-    INDEX idx_author_birth_year (birth_year)
+    INDEX idx_author_name (name)
 );
 
 -- Create books table
@@ -22,7 +20,7 @@ CREATE TABLE IF NOT EXISTS books (
     title VARCHAR(500) NOT NULL,
     isbn VARCHAR(20) UNIQUE NOT NULL,
     published_year INT NOT NULL,
-    availability_status ENUM('AVAILABLE', 'BORROWED', 'MAINTENANCE') DEFAULT 'AVAILABLE',
+    availability_status ENUM('AVAILABLE', 'BORROWED', 'MAINTENANCE', 'LOST') DEFAULT 'AVAILABLE',
     author_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -36,15 +34,15 @@ CREATE TABLE IF NOT EXISTS books (
 );
 
 -- Insert sample authors
-INSERT INTO authors (name, birth_year, nationality, biography) VALUES
-('J.K. Rowling', 1965, 'British', 'British author, best known for the Harry Potter fantasy series'),
-('George Orwell', 1903, 'British', 'English novelist, essayist, journalist and critic'),
-('Harper Lee', 1926, 'American', 'American novelist best known for To Kill a Mockingbird'),
-('F. Scott Fitzgerald', 1896, 'American', 'American novelist and short story writer'),
-('Jane Austen', 1775, 'British', 'English novelist known primarily for her six major novels'),
-('Mark Twain', 1835, 'American', 'American writer, humorist, entrepreneur, publisher, and lecturer'),
-('Charles Dickens', 1812, 'British', 'English writer and social critic'),
-('Agatha Christie', 1890, 'British', 'English writer known for her detective novels');
+INSERT INTO authors (name, nationality, biography) VALUES
+('J.K. Rowling', 'British', 'British author, best known for the Harry Potter fantasy series'),
+('George Orwell', 'British', 'English novelist, essayist, journalist and critic'),
+('Harper Lee', 'American', 'American novelist best known for To Kill a Mockingbird'),
+('F. Scott Fitzgerald', 'American', 'American novelist and short story writer'),
+('Jane Austen', 'British', 'English novelist known primarily for her six major novels'),
+('Mark Twain', 'American', 'American writer, humorist, entrepreneur, publisher, and lecturer'),
+('Charles Dickens', 'British', 'English writer and social critic'),
+('Agatha Christie', 'British', 'English writer known for her detective novels');
 
 -- Insert sample books
 INSERT INTO books (title, isbn, published_year, availability_status, author_id) VALUES

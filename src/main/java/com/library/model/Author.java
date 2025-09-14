@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Max;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,11 +31,6 @@ public class Author {
     @Column(name = "biography", columnDefinition = "TEXT")
     private String biography;
     
-    @Min(value = 1000, message = "Birth year must be reasonable")
-    @Max(value = 2024, message = "Birth year cannot be in the future")
-    @Column(name = "birth_year")
-    private Integer birthYear;
-    
     @Column(name = "nationality")
     private String nationality;
     
@@ -62,10 +55,9 @@ public class Author {
         updatedAt = LocalDateTime.now();
     }
     
-    public Author(String name, String biography, Integer birthYear, String nationality) {
+    public Author(String name, String biography, String nationality) {
         this.name = name;
         this.biography = biography;
-        this.birthYear = birthYear;
         this.nationality = nationality;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();

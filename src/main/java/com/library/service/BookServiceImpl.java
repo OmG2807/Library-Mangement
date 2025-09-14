@@ -7,7 +7,6 @@ import com.library.model.dto.BookResponse;
 import com.library.model.dto.PageResponse;
 import com.library.repository.AuthorRepository;
 import com.library.repository.BookRepository;
-import com.library.repository.CustomBookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,8 +31,6 @@ public class BookServiceImpl implements BookService {
     
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
-    private final CustomBookRepository customBookRepository;
-    private final EventService eventService;
     
     @Override
     public BookResponse createBook(BookRequest bookRequest) {
@@ -44,26 +41,21 @@ public class BookServiceImpl implements BookService {
             throw new IllegalArgumentException("Book with ISBN " + bookRequest.getIsbn() + " already exists");
         }
         
-        // Validate author exists
+        // Find author by ID
         Author author = authorRepository.findById(bookRequest.getAuthorId())
                 .orElseThrow(() -> new IllegalArgumentException("Author not found with ID: " + bookRequest.getAuthorId()));
         
         // Create book entity
         Book book = new Book(
                 bookRequest.getTitle(),
+                author,
                 bookRequest.getIsbn(),
                 bookRequest.getPublishedYear(),
-                Book.AvailabilityStatus.AVAILABLE,
-                author
+                Book.AvailabilityStatus.AVAILABLE
         );
         
         Book savedBook = bookRepository.save(book);
         log.info("Book created successfully with ID: {}", savedBook.getId());
-        
-        // Publish book creation event
-        eventService.publishBookEvent(savedBook, "CREATE");
-        eventService.publishAuditEvent("system", "CREATE_BOOK", "BOOK", savedBook.getId(), 
-                "Book created: " + savedBook.getTitle());
         
         return convertToBookResponse(savedBook);
     }
@@ -97,24 +89,19 @@ public class BookServiceImpl implements BookService {
             throw new IllegalArgumentException("Book with ISBN " + bookRequest.getIsbn() + " already exists");
         }
         
-        // Validate author exists
+        // Find author by ID
         Author author = authorRepository.findById(bookRequest.getAuthorId())
                 .orElseThrow(() -> new IllegalArgumentException("Author not found with ID: " + bookRequest.getAuthorId()));
         
         // Update book fields
         existingBook.setTitle(bookRequest.getTitle());
+        existingBook.setAuthor(author);
         existingBook.setIsbn(bookRequest.getIsbn());
         existingBook.setPublishedYear(bookRequest.getPublishedYear());
-        existingBook.setAuthor(author);
         existingBook.setUpdatedAt(LocalDateTime.now());
         
         Book updatedBook = bookRepository.save(existingBook);
         log.info("Book updated successfully with ID: {}", updatedBook.getId());
-        
-        // Publish book update event
-        eventService.publishBookEvent(updatedBook, "UPDATE");
-        eventService.publishAuditEvent("system", "UPDATE_BOOK", "BOOK", updatedBook.getId(), 
-                "Book updated: " + updatedBook.getTitle());
         
         return convertToBookResponse(updatedBook);
     }
@@ -123,13 +110,8 @@ public class BookServiceImpl implements BookService {
     public void deleteBook(Long id) {
         log.info("Deleting book with ID: {}", id);
         
-        Book book = bookRepository.findById(id)
+        bookRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found with ID: " + id));
-        
-        // Publish book deletion event before deleting
-        eventService.publishBookEvent(book, "DELETE");
-        eventService.publishAuditEvent("system", "DELETE_BOOK", "BOOK", book.getId(), 
-                "Book deleted: " + book.getTitle());
         
         bookRepository.deleteById(id);
         log.info("Book deleted successfully with ID: {}", id);
@@ -204,42 +186,6 @@ public class BookServiceImpl implements BookService {
     }
     
     @Override
-    public List<BookResponse> getPopularBooks(int limit) {
-        log.info("Fetching popular books with limit: {}", limit);
-        
-        List<Book> books = customBookRepository.findPopularBooks(limit);
-        return books.stream()
-                .map(this::convertToBookResponse)
-                .collect(Collectors.toList());
-    }
-    
-    @Override
-    public List<BookResponse> getRecentlyAddedBooks(int limit) {
-        log.info("Fetching recently added books with limit: {}", limit);
-        
-        List<Book> books = customBookRepository.findRecentlyAddedBooks(limit);
-        return books.stream()
-                .map(this::convertToBookResponse)
-                .collect(Collectors.toList());
-    }
-    
-    @Override
-    public List<BookResponse> getSimilarBooks(Long bookId, int limit) {
-        log.info("Fetching similar books for book ID: {} with limit: {}", bookId, limit);
-        
-        List<Book> books = customBookRepository.findSimilarBooks(bookId, limit);
-        return books.stream()
-                .map(this::convertToBookResponse)
-                .collect(Collectors.toList());
-    }
-    
-    @Override
-    public CustomBookRepository.BookStatistics getBookStatistics() {
-        log.info("Fetching book statistics");
-        return customBookRepository.getBookStatistics();
-    }
-    
-    @Override
     public BookResponse updateBookAvailability(Long bookId, Book.AvailabilityStatus status) {
         log.info("Updating book availability - bookId: {}, status: {}", bookId, status);
         
@@ -251,12 +197,6 @@ public class BookServiceImpl implements BookService {
         
         Book updatedBook = bookRepository.save(book);
         log.info("Book availability updated successfully - bookId: {}, status: {}", bookId, status);
-        
-        // Publish book availability update event
-        String operation = status == Book.AvailabilityStatus.AVAILABLE ? "RETURN" : "BORROW";
-        eventService.publishBookEvent(updatedBook, operation);
-        eventService.publishAuditEvent("system", "UPDATE_BOOK_AVAILABILITY", "BOOK", updatedBook.getId(), 
-                "Book availability changed to: " + status + " for book: " + updatedBook.getTitle());
         
         return convertToBookResponse(updatedBook);
     }
@@ -282,12 +222,11 @@ public class BookServiceImpl implements BookService {
         response.setUpdatedAt(book.getUpdatedAt());
         
         // Set author information
-        if (book.getAuthor() != null) {
-            BookResponse.AuthorInfo authorInfo = new BookResponse.AuthorInfo();
-            authorInfo.setAuthorId(book.getAuthor().getId());
-            authorInfo.setName(book.getAuthor().getName());
-            response.setAuthor(authorInfo);
-        }
+        BookResponse.AuthorInfo authorInfo = new BookResponse.AuthorInfo();
+        authorInfo.setId(book.getAuthor().getId());
+        authorInfo.setName(book.getAuthor().getName());
+        authorInfo.setNationality(book.getAuthor().getNationality());
+        response.setAuthor(authorInfo);
         
         return response;
     }

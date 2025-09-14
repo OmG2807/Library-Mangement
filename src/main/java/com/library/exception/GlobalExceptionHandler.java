@@ -78,56 +78,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
     
-    /**
-     * Handle resource not found exceptions
-     */
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        log.error("Resource not found exception occurred", ex);
-        
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "Resource not found",
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-    
-    /**
-     * Handle duplicate resource exceptions
-     */
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateResourceException(DuplicateResourceException ex, WebRequest request) {
-        log.error("Duplicate resource exception occurred", ex);
-        
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                "Resource already exists",
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
-        
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-    }
-    
-    /**
-     * Handle business logic exceptions
-     */
-    @ExceptionHandler(BusinessLogicException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessLogicException(BusinessLogicException ex, WebRequest request) {
-        log.error("Business logic exception occurred", ex);
-        
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNPROCESSABLE_ENTITY.value(),
-                "Business logic violation",
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
-        
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
-    }
     
     /**
      * Handle generic exceptions

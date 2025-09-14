@@ -8,7 +8,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -32,6 +31,11 @@ public class Book {
     @Column(name = "title", nullable = false)
     private String title;
     
+    @NotNull(message = "Author is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
+    
     @NotBlank(message = "ISBN is required")
     @Pattern(regexp = "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$", 
              message = "Invalid ISBN format")
@@ -40,7 +44,6 @@ public class Book {
     
     @NotNull(message = "Published year is required")
     @Min(value = 1000, message = "Published year must be reasonable")
-    @Max(value = 2024, message = "Published year cannot be in the future")
     @Column(name = "published_year", nullable = false)
     private Integer publishedYear;
     
@@ -48,10 +51,6 @@ public class Book {
     @Enumerated(EnumType.STRING)
     @Column(name = "availability_status", nullable = false)
     private AvailabilityStatus availabilityStatus;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    private Author author;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -70,12 +69,12 @@ public class Book {
         updatedAt = LocalDateTime.now();
     }
     
-    public Book(String title, String isbn, Integer publishedYear, AvailabilityStatus availabilityStatus, Author author) {
+    public Book(String title, Author author, String isbn, Integer publishedYear, AvailabilityStatus availabilityStatus) {
         this.title = title;
+        this.author = author;
         this.isbn = isbn;
         this.publishedYear = publishedYear;
         this.availabilityStatus = availabilityStatus;
-        this.author = author;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
