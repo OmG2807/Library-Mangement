@@ -15,8 +15,8 @@ public class RateLimitConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(rateLimitInterceptor())
-                .addPathPatterns("/api/**") // Apply to all API endpoints
-                .excludePathPatterns("/actuator/**"); // Exclude actuator endpoints
+                .addPathPatterns("/**") // Apply to all paths
+                .excludePathPatterns("/actuator/**", "/h2-console/**"); // Exclude actuator and H2 console
     }
     
     @Bean
